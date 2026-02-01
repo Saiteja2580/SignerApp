@@ -1,0 +1,15 @@
+<main class="min-h-screen flex flex-col">
+    <header class="sticky top-0 z-50 bg-white shadow-md"> <!-- `sticky top-0 z-50` are key classes -->
+        <div class="container mx-auto flex items-center justify-between p-4">
+            <!-- Logo -->
+            <a href="#" class="flex items-center space-x-2">
+                <span class="text-xl font-bold text-blue-600">Signer</span>
+            </a>
+        </div>
+    </header>
+    <div class="container mx-auto flex-1">
+        <div class="flex items-center justify-center w-full h-full">
+            <router-outlet></router-outlet>
+        </div>
+    </div>
+</main>

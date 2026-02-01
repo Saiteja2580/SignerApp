@@ -1,0 +1,24 @@
+<div #signatureBox [ngStyle]="getBoxStyle()" (mousedown)="onMouseDown($event)" class="signature-box">
+
+    <!-- Resize Handles -->
+    <div class="resize-handle nw" (mousedown)="onMouseDown($event, 'nw')"></div>
+    <div class="resize-handle ne" (mousedown)="onMouseDown($event, 'ne')"></div>
+    <div class="resize-handle sw" (mousedown)="onMouseDown($event, 'sw')"></div>
+    <div class="resize-handle se" (mousedown)="onMouseDown($event, 'se')"></div>
+
+    <!-- Signature Details -->
+    <div *ngIf="box.config.showDetails" class="signature-details" [ngStyle]="getTextStyle()">
+        <div class="detail-line">
+            <strong>Signer:</strong> {{box.config.fontColor}}
+        </div>
+        <div class="detail-line">
+            <strong>Date:</strong> {{ getCurrentDate() }}
+        </div>
+        <div class="detail-line text-xs">
+            Position: ({{box.x | number:'1.0-0'}}, {{box.y | number:'1.0-0'}})
+        </div>
+        <div class="detail-line text-xs">
+            Size: {{box.width | number:'1.0-0'}} × {{box.height | number:'1.0-0'}}
+        </div>
+    </div>
+</div>

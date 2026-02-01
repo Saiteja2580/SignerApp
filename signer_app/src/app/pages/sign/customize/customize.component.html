@@ -1,0 +1,139 @@
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto">
+        <!-- Sticky Header -->
+        <div class="sticky top-0 z-20 bg-gray-50 py-6 px-6">
+            <h1 class="text-3xl font-bold text-gray-900">Customize Signature</h1>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 px-6 pb-6">
+            <!-- Left: PDF Preview (2/3 width) -->
+            <div class="lg:col-span-2 bg-white rounded-lg shadow p-4 h-fit">
+                <div class="relative h-fit w-full">
+                    <app-pdf-viewer [pdfSrc]="pdfSrc()" [currentPage]="pdfState.signature().pageNumber"
+                        (pageRendered)="onPageRendered($event)" />
+
+                    <!-- Signature box overlay (non-draggable, just preview) -->
+                    <div class="absolute border rounded pointer-events-none overflow-hidden flex flex-col items-center justify-center transition-all duration-200"
+                        [style.border-color]="customizeForm.value.borderColor" [style.border-width.px]="2"
+                        [style.background-color]="customizeForm.value.borderColor + '08'"
+                        [style.width.px]="uiBoxWidth()" [style.height.px]="uiBoxHeight()" [style.left.px]="uiBoxX()"
+                        [style.top.px]="uiBoxY()">
+
+                        <!-- Real signature image preview (Drawn/Uploaded/Typed) -->
+                        @if (pdfState.getSignatureImage()) {
+                        <img [src]="pdfState.getSignatureImage()"
+                            class="w-full h-full object-contain pointer-events-none p-1" />
+                        } @else {
+                        <div class="p-2 text-center" [style.color]="customizeForm.value.fontColor">
+                            <p class="text-[10px] font-bold uppercase tracking-tight opacity-50 mb-0.5">Digitally Signed
+                                By</p>
+                            <p class="text-sm font-bold truncate leading-tight">{{ customizeForm.value.role || 'Your
+                                Name' }}</p>
+                            <p class="text-[9px] truncate opacity-70 mt-0.5">{{ customizeForm.value.location || 'Your
+                                Location' }}</p>
+                        </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Customization Form (1/3 width) - Sticky -->
+            <div
+                class="lg:sticky lg:top-24 lg:self-start bg-white rounded-lg shadow p-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6 font-primary">Signature Customization</h2>
+
+                <!-- Identity selection logic could go here later, for now just custom signature -->
+                <div class="mb-8 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-widest mb-4">Your
+                        Signature</label>
+                    <app-signature-selector [fontColor]="customizeForm.value.fontColor"
+                        (signatureChange)="onSignatureChange($event)" />
+                </div>
+
+                <form [formGroup]="customizeForm" class="space-y-6">
+                    <div class="space-y-4 pt-4 border-t border-gray-100">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest ">Additional
+                            Details</label>
+                        <div>
+                            <label for="role" class="block text-sm font-medium text-gray-700 mb-1">
+                                Role <span class="text-red-500">*</span>
+                            </label>
+                            <input id="role" type="text" formControlName="role"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 sm:text-sm transition-all shadow-sm"
+                                [class.border-red-500]="customizeForm.get('role')?.invalid && customizeForm.get('role')?.touched"
+                                placeholder="e.g., Manager">
+                            @if (customizeForm.get('role')?.invalid && customizeForm.get('role')?.touched) {
+                            <p class="mt-1 text-xs text-red-500">Role is required</p>
+                            }
+                        </div>
+
+                        <div>
+                            <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">
+                                Reason <span class="text-red-500">*</span>
+                            </label>
+                            <input id="reason" type="text" formControlName="reason"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 sm:text-sm transition-all shadow-sm"
+                                [class.border-red-500]="customizeForm.get('reason')?.invalid && customizeForm.get('reason')?.touched"
+                                placeholder="e.g., Approval">
+                            @if (customizeForm.get('reason')?.invalid && customizeForm.get('reason')?.touched) {
+                            <p class="mt-1 text-xs text-red-500">Reason is required</p>
+                            }
+                        </div>
+
+                        <div>
+                            <label for="location" class="block text-sm font-medium text-gray-700 mb-1">
+                                Location <span class="text-red-500">*</span>
+                            </label>
+                            <input id="location" type="text" formControlName="location"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 sm:text-sm transition-all shadow-sm"
+                                [class.border-red-500]="customizeForm.get('location')?.invalid && customizeForm.get('location')?.touched"
+                                placeholder="e.g., New York">
+                            @if (customizeForm.get('location')?.invalid && customizeForm.get('location')?.touched) {
+                            <p class="mt-1 text-xs text-red-500">Location is required</p>
+                            }
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="fontSize" class="block text-sm font-medium text-gray-700 mb-1">
+                            Font Size: {{ customizeForm.value.fontSize }}px
+                        </label>
+                        <input id="fontSize" type="range" formControlName="fontSize" min="8" max="20"
+                            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="borderColor" class="block text-sm font-medium text-gray-700 mb-1">Border
+                                Color</label>
+                            <input id="borderColor" type="color" formControlName="borderColor"
+                                class="w-full h-10 rounded-md border border-gray-300 cursor-pointer">
+                        </div>
+
+                        <div>
+                            <label for="fontColor" class="block text-sm font-medium text-gray-700 mb-1">Font
+                                Color</label>
+                            <input id="fontColor" type="color" formControlName="fontColor"
+                                class="w-full h-10 rounded-md border border-gray-300 cursor-pointer">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-4 border-t">
+                        <button type="button" (click)="goBack()"
+                            class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium transition-colors">
+                            Back
+                        </button>
+                        <button type="button" (click)="signDocument()" [disabled]="isLoading() || customizeForm.invalid"
+                            class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition-colors">
+                            @if (isLoading()) {
+                            <span>Signing...</span>
+                            } @else {
+                            <span>Sign Document</span>
+                            }
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

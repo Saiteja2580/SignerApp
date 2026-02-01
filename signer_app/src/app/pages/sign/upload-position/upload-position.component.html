@@ -1,0 +1,133 @@
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-7xl mx-auto">
+    <!-- Sticky Header -->
+    <div class="sticky top-0 z-20 bg-gray-50 py-6 px-6">
+      <h1 class="text-3xl font-bold text-gray-900">Sign PDF Document</h1>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 px-6 pb-6">
+      <!-- Left: PDF Viewer (2/3 width) -->
+      <div class="lg:col-span-2 bg-white rounded-lg shadow p-4 h-fit min-h-full">
+
+        @if (pdfState.hasPdf()) {
+        <div class="relative h-fit w-full">
+          <app-pdf-viewer [pdfSrc]="pdfSrc()" [currentPage]="currentPage()" (pdfLoaded)="onPdfLoaded($event)"
+            (pageRendered)="onPageRendered($event)" />
+
+          <app-signature-box [x]="uiBoxX()" [y]="uiBoxY()" [width]="uiBoxWidth()" [height]="uiBoxHeight()"
+            (positionChanged)="onPositionChanged($event)" (sizeChanged)="onSizeChanged($event)" />
+        </div>
+
+
+        } @else {
+        <!-- Upload Area -->
+        <div
+          class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-indigo-400 transition-colors">
+          <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+          </svg>
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf" class="hidden">
+          <button (click)="fileInput.click()"
+            class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium transition-colors">
+            Choose PDF File
+          </button>
+          <p class="mt-2 text-sm text-gray-500">or drag and drop</p>
+        </div>
+        }
+      </div>
+
+      <!-- Right: Controls (1/3 width) - Sticky -->
+      <div class="lg:sticky lg:top-6 lg:self-start bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Position Signature</h2>
+
+        @if (pdfState.hasPdf()) {
+        <div class="space-y-4">
+          <!-- Navigation -->
+          <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-6">
+            <h3 class="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-3">Document Controls</h3>
+            <div class="flex items-center justify-between gap-4">
+              <button (click)="previousPage()" [disabled]="currentPage() === 1"
+                class="flex-1 px-3 py-2 bg-white text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold text-sm shadow-sm">
+                Previous
+              </button>
+              <div class="text-center min-w-[80px]">
+                <span class="text-[10px] text-indigo-400 block uppercase font-bold">Page</span>
+                <span class="text-lg font-bold text-indigo-900 leading-none">{{ currentPage() }} / {{ totalPages()
+                  }}</span>
+              </div>
+              <button (click)="nextPage()" [disabled]="currentPage() === totalPages()"
+                class="flex-1 px-3 py-2 bg-white text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold text-sm shadow-sm">
+                Next
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Selected File</label>
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M4 18h12V6l-6-6H4v18zM10 2l5 5h-5V2z" />
+              </svg>
+              <p class="text-sm font-semibold text-gray-900 truncate">{{ pdfState.signature().fileName }}</p>
+            </div>
+          </div>
+
+          <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Coordinates
+              (Points)</label>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
+                <span class="text-[10px] text-gray-400 block uppercase font-bold mb-1">X-Axis</span>
+                <div class="flex items-baseline gap-1">
+                  <span class="text-base font-bold text-gray-900">{{ pdfState.signature().x }}</span>
+                  <span class="text-[10px] text-gray-400">pt</span>
+                </div>
+                <span class="text-[10px] text-indigo-500/70 font-medium">({{ uiBoxX() | number:'1.0-0' }}px)</span>
+              </div>
+              <div class="bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
+                <span class="text-[10px] text-gray-400 block uppercase font-bold mb-1">Y-Axis</span>
+                <div class="flex items-baseline gap-1">
+                  <span class="text-base font-bold text-gray-900">{{ pdfState.signature().y }}</span>
+                  <span class="text-[10px] text-gray-400">pt</span>
+                </div>
+                <span class="text-[10px] text-indigo-500/70 font-medium">({{ uiBoxY() | number:'1.0-0' }}px)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Signature Size</label>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
+                <span class="text-[10px] text-gray-400 block uppercase font-bold mb-1">Width</span>
+                <div class="flex items-baseline gap-1">
+                  <span class="text-base font-bold text-gray-900">{{ pdfState.signature().width }}</span>
+                  <span class="text-[10px] text-gray-400">pt</span>
+                </div>
+              </div>
+              <div class="bg-white p-2 rounded-lg border border-gray-100 shadow-sm">
+                <span class="text-[10px] text-gray-400 block uppercase font-bold mb-1">Height</span>
+                <div class="flex items-baseline gap-1">
+                  <span class="text-base font-bold text-gray-900">{{ pdfState.signature().height }}</span>
+                  <span class="text-[10px] text-gray-400">pt</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button (click)="goToCustomize()"
+            class="w-full mt-4 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-bold transition-all shadow-lg shadow-indigo-200 active:scale-[0.98] flex items-center justify-center gap-2">
+            Confirm Position
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </button>
+        </div>
+        } @else {
+        <p class="text-gray-500 text-sm">Upload a PDF document to begin the signing process.</p>
+        }
+      </div>
+    </div>
+  </div>
+</div>
