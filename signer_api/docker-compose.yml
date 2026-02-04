@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - 3000:3000
+    networks:
+      - signer-app-network
+    volumes:
+      - .:/usr/src/app
+
+  postgres:
+    image: postgres:latest
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Kst@2004
+      POSTGRES_DB: signer_db
+    networks:
+      - signer-app-network
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+networks:
+  signer-app-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
